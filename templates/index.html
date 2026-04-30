@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Heart-AI | Diagnostic Dashboard</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #3498db; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; }
+        
+        .navbar { background: var(--primary); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .navbar .logo { font-size: 1.5rem; font-weight: bold; text-decoration: none; color: white; letter-spacing: 1px; }
+        .navbar-links a { color: white; text-decoration: none; margin-left: 20px; font-weight: bold; transition: 0.3s; padding: 8px 15px; border-radius: 5px; }
+        .navbar-links a:hover { background: var(--accent); }
+
+        .dashboard-container { text-align: center; max-width: 900px; margin: 60px auto; padding: 20px; }
+        .header-title { color: var(--primary); font-size: 2.5rem; margin-bottom: 10px; font-weight: bold; }
+        .subtitle { color: #7f8c8d; font-size: 1.1rem; margin-bottom: 40px; }
+
+        .cards-wrapper { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; }
+        .card { background: white; border-radius: 15px; padding: 40px 30px; width: 300px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s ease; text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; border-top: 5px solid transparent; }
+        .card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.15); }
+        
+        .card.vital { border-top-color: #e67e22; }
+        .card.vital .icon { background: #fdf2e9; color: #e67e22; }
+        .card.vital .btn { background: #e67e22; }
+        .card.vital .btn:hover { background: #d35400; }
+
+        .card.ecg { border-top-color: var(--accent); }
+        .card.ecg .icon { background: #ebf5fb; color: var(--accent); }
+        .card.ecg .btn { background: var(--accent); }
+        .card.ecg .btn:hover { background: #2980b9; }
+
+        .icon { width: 80px; height: 80px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; margin-bottom: 20px; }
+        .card h3 { color: var(--primary); font-size: 1.5rem; margin: 10px 0; }
+        .card p { color: #7f8c8d; font-size: 0.95rem; line-height: 1.5; margin-bottom: 25px; flex-grow: 1; }
+        .btn { color: white; padding: 12px 30px; border-radius: 30px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; width: 80%; text-align: center; transition: 0.3s; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <a href="/" class="logo">🫀 Heart-AI</a>
+    <div class="navbar-links">
+        <a href="/">Dashboard</a>
+        <a href="/history">History</a>
+    </div>
+</div>
+
+<div class="dashboard-container">
+    <div class="header-title">Heart-AI Diagnostic Center</div>
+    <div class="subtitle">Select the diagnostic method for patient evaluation</div>
+
+    <div class="cards-wrapper">
+        <a href="/predict_vitals" class="card vital">
+            <div class="icon">📋</div>
+            <h3>Patient Vitals</h3>
+            <p>Analyze clinical parameters (Age, BP, Cholesterol) to predict heart disease risk using Machine Learning.</p>
+            <div class="btn">Enter Vitals</div>
+        </a>
+        <a href="/predict_image_page" class="card ecg">
+            <div class="icon">🫀</div>
+            <h3>ECG Vision AI</h3>
+            <p>Upload patient ECG scan (JPG/PNG) for automated waveform analysis and immediate classification.</p>
+            <div class="btn">Upload ECG</div>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

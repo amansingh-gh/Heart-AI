@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ECG AI Diagnostic | Heart-AI</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; }
+        
+        .navbar { background: var(--primary); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .navbar .logo { font-size: 1.5rem; font-weight: bold; text-decoration: none; color: white; letter-spacing: 1px; }
+        .navbar-links a { color: white; text-decoration: none; margin-left: 20px; font-weight: bold; transition: 0.3s; padding: 8px 15px; border-radius: 5px; }
+        .navbar-links a:hover { background: var(--accent); }
+
+        .container { max-width: 800px; margin: 0 auto 40px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h2 { color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
+        
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #444; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        
+        .upload-section { border: 2px dashed var(--accent); padding: 30px; border-radius: 10px; background: #f9fcff; text-align: center; margin-top: 20px; }
+        .btn-submit { background: var(--success); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-size: 1.1rem; cursor: pointer; transition: 0.3s; margin-top: 20px; width: 100%; font-weight: bold; }
+        .btn-submit:hover { background: #219150; transform: translateY(-2px); }
+
+        .report-card { margin-top: 40px; border: 1px solid #ddd; border-radius: 12px; overflow: hidden; }
+        .report-header { background: var(--primary); color: white; padding: 15px; text-align: center; font-weight: bold; letter-spacing: 1px; }
+        .report-body { padding: 25px; display: flex; gap: 20px; align-items: flex-start; }
+        .result-box { flex: 1; }
+        .result-tag { font-size: 1.5rem; font-weight: bold; color: #e74c3c; margin: 10px 0; }
+        .normal { color: var(--success) !important; }
+        .ecg-preview { width: 250px; border-radius: 8px; border: 1px solid #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; font-size: 0.9rem; }
+        
+        .pdf-btn { display: inline-block; background: var(--primary); color: white; text-decoration: none; padding: 10px 20px; margin-top: 15px; border-radius: 5px; font-weight: bold; transition: 0.3s; font-size: 0.9rem; border: 1px solid #1a252f; }
+        .pdf-btn:hover { background: #1a252f; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <a href="/" class="logo">🫀 Heart-AI</a>
+    <div class="navbar-links">
+        <a href="/">Dashboard</a>
+        <a href="/history">History</a>
+    </div>
+</div>
+
+<div class="container">
+    <h2>ECG Vision Analysis System</h2>
+    
+    <form action="/predict_image" method="post" enctype="multipart/form-data">
+        <div class="info-grid">
+            <div class="form-group">
+                <label>Patient Full Name</label>
+                <input type="text" name="patient_name" placeholder="e.g. Rahul Sharma" required>
+            </div>
+            <div class="form-group">
+                <label>Patient Age</label>
+                <input type="number" name="age" placeholder="e.g. 45" required>
+            </div>
+        </div>
+
+        <div class="upload-section">
+            <label>Upload ECG Scan (JPG/PNG)</label>
+            <input type="file" name="ecg_image" accept="image/*" required>
+            <p style="font-size: 0.8rem; color: #7f8c8d;">Ensure the waveform is clearly visible for accurate AI interpretation.</p>
+        </div>
+
+        <button type="submit" class="btn-submit">GENERATE AI DIAGNOSIS</button>
+    </form>
+
+    {% if prediction_text %}
+    <div class="report-card">
+        <div class="report-header">OFFICIAL AI DIAGNOSTIC REPORT</div>
+        <div class="report-body">
+            <div class="result-box">
+                <p style="margin-top:0;"><strong>Patient:</strong> {{ p_name }} | <strong>Age:</strong> {{ p_age }}</p>
+                <p style="margin-bottom: 5px;">Primary Findings:</p>
+                
+                <div class="result-tag {% if 'Normal' in prediction_text %}normal{% endif %}">
+                    {{ prediction_text }}
+                </div>
+                <p style="margin-top: 5px;"><strong>AI Confidence:</strong> {{ probability }}%</p>
+
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px; margin-bottom: 20px; border-left: 4px solid #3498db;">
+                    <h4 style="margin-top: 0; color: #2c3e50; font-size: 1rem;">🩺 AI Medical Insight:</h4>
+                    <p style="font-size: 0.9rem; color: #444; line-height: 1.5; margin-bottom: 0;">
+                        {% if 'Normal' in prediction_text %}
+                            <strong style="color: #27ae60;">Status: Healthy.</strong> Waves P, QRS, and T are in standard formation. The heart rhythm appears regular with no immediate anomalies detected. Routine checkups are advised to maintain cardiovascular health.
+                        {% elif 'Unrecognized Scan' in prediction_text %}
+                            <strong style="color: #c0392b;">⚠️ Invalid Image Detected:</strong> The AI could not confidently recognize this as a valid ECG waveform. Please ensure you are uploading a clear, high-quality image of an ECG strip. Do not upload unrelated images.
+                        {% elif 'Abnormal Heartbeat' in prediction_text %}
+                            <strong style="color: #f39c12;">Caution:</strong> Irregularities detected in the heart's rhythm or electrical conduction. This could indicate arrhythmias (like premature contractions or atrial fibrillation). A clinical correlation with a Holter monitor is recommended.
+                        {% elif 'Myocardial Infarction' in prediction_text %}
+                            <strong style="color: #e74c3c;">CRITICAL ALERT:</strong> AI detected potential ST-segment elevation or Q-wave abnormalities. This is a strong indicator of an active heart attack. <strong>Seek immediate emergency medical attention.</strong>
+                        {% elif 'Post MI' in prediction_text %}
+                            <strong style="color: #8e44ad;">Historical Note:</strong> Patterns suggest historical damage to the heart muscle from a previous heart attack (e.g., pathological Q waves). Regular cardiology follow-ups are recommended for ongoing management.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <hr style="border: none; border-top: 1px solid #eee;">
+                
+                <p style="font-size: 0.85rem; color: #666;">
+                    <strong>Recommendation:</strong> 
+                    {% if 'Normal' in prediction_text %}
+                        No immediate cardiac concerns detected.
+                    {% elif 'Unrecognized Scan' in prediction_text %}
+                        Please re-upload a valid medical document for analysis.
+                    {% else %}
+                        Please consult a Cardiologist immediately for clinical correlation and further testing.
+                    {% endif %}
+                </p>
+
+                {% if 'Unrecognized Scan' not in prediction_text %}
+                <a href="/download_report/{{ p_name }}/{{ p_age }}/{{ prediction_text }}/{{ probability }}" class="pdf-btn">
+                   📄 Download PDF Report
+                </a>
+                {% endif %}
+
+            </div>
+            <img src="{{ user_image }}" class="ecg-preview" alt="Uploaded Scan">
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+</body>
+</html>

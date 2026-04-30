@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Vitals Analysis | Heart-AI</title>
+    <style>
+        :root { --primary: #2c3e50; --success: #27ae60; --error: #e74c3c; --accent: #3498db; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; padding: 0;}
+        
+        /* --- NAYA NAVBAR CSS --- */
+        .navbar { background: var(--primary); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .navbar .logo { font-size: 1.5rem; font-weight: bold; text-decoration: none; color: white; letter-spacing: 1px; }
+        .navbar-links a { color: white; text-decoration: none; margin-left: 20px; font-weight: bold; transition: 0.3s; padding: 8px 15px; border-radius: 5px; }
+        .navbar-links a:hover { background: var(--accent); }
+        /* ----------------------- */
+
+        .container { max-width: 800px; margin: 0 auto 40px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .full-width { grid-column: 1 / -1; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; color: #444; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; transition: 0.3s; }
+        .input-error { border: 2px solid var(--error) !important; background-color: #fadbd8 !important; }
+        .error-msg { color: var(--error); font-size: 12px; font-weight: bold; display: none; margin-top: 5px; }
+        button { width: 100%; padding: 15px; background: var(--success); color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; margin-top: 20px; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #219150; transform: translateY(-2px); }
+        .result { margin-top: 20px; padding: 20px; text-align: center; border-radius: 8px; font-weight: bold; font-size: 1.1rem; }
+        .high-risk { background: #fdedec; color: #c0392b; border: 2px solid #e74c3c; }
+        .low-risk { background: #eafaf1; color: #27ae60; border: 2px solid #2ecc71; }
+    </style>
+</head>
+<body>
+    
+    <!-- YAHAN AAGAYA AAPKA NAYA NAVBAR -->
+    <div class="navbar">
+        <a href="/" class="logo">🫀 Heart-AI</a>
+        <div class="navbar-links">
+            <a href="/">Dashboard</a>
+            <a href="/history">History</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 style="text-align: center; color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-top: 0;">Clinical Vitals Report</h2>
+        
+        <form action="/predict_vitals" method="post">
+            <div class="form-grid">
+                <div class="full-width"><label>Patient Name</label><input type="text" name="patient_name" required placeholder="E.g., John Doe"></div>
+                <div><label>Age</label><input type="number" name="age" min="20" max="100" required placeholder="20-100"></div>
+                <div><label>Sex</label><select name="sex"><option value="1">Male</option><option value="0">Female</option></select></div>
+                <div><label>Chest Pain (0-3)</label><input type="number" name="cp" min="0" max="3" required placeholder="0-3"></div>
+                <div><label>Resting BP</label><input type="number" name="trestbps" min="80" max="200" required placeholder="80-200"></div>
+                <div><label>Cholesterol</label><input type="number" name="chol" min="100" max="500" required placeholder="100-500"></div>
+                <div><label>FBS > 120</label><select name="fbs"><option value="0">False</option><option value="1">True</option></select></div>
+                <div><label>Resting ECG (0-2)</label><input type="number" name="restecg" min="0" max="2" required placeholder="0-2"></div>
+                <div><label>Max Heart Rate</label><input type="number" name="thalach" min="60" max="220" required placeholder="60-220"></div>
+                <div><label>Ex. Angina</label><select name="exang"><option value="0">No</option><option value="1">Yes</option></select></div>
+                <div><label>Oldpeak</label><input type="number" step="0.1" name="oldpeak" min="0" max="6" required placeholder="0-6"></div>
+                <div><label>ST Slope (0-2)</label><input type="number" name="slope" min="0" max="2" required placeholder="0-2"></div>
+                <div><label>Major Vessels (0-3)</label><input type="number" name="ca" min="0" max="3" required placeholder="0-3"></div>
+                <div><label>Thalassemia (1-3)</label><input type="number" name="thal" min="1" max="3" required placeholder="1-3"></div>
+            </div>
+            <button type="submit">Analyze Vitals</button>
+        </form>
+
+        {% if prediction_text %}
+        <div class="result {% if 'High' in prediction_text %}high-risk{% else %}low-risk{% endif %}">
+            {{ prediction_text }} (Probability: {{ probability }}%)
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            let errorSpan = document.createElement('div');
+            errorSpan.className = 'error-msg';
+            input.parentNode.appendChild(errorSpan);
+            input.addEventListener('input', function() {
+                if (this.value !== "" && (parseFloat(this.value) < parseFloat(this.min) || parseFloat(this.value) > parseFloat(this.max))) {
+                    this.classList.add('input-error');
+                    errorSpan.innerText = `⚠️ Range: ${this.min}-${this.max}`;
+                    errorSpan.style.display = 'block';
+                } else {
+                    this.classList.remove('input-error');
+                    errorSpan.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

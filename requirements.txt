@@ -1,0 +1,10 @@
+flask
+flask-sqlalchemy
+xgboost
+scikit-learn
+pandas
+numpy
+gunicorn
+psycopg2-binary
+fpdf
+tensorflow

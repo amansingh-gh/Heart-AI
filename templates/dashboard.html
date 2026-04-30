@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart-AI Dashboard</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; }
+        .navbar { background: var(--primary); width: 100%; padding: 15px 0; text-align: center; margin-bottom: 30px; }
+        .navbar a { color: white; text-decoration: none; margin: 0 15px; font-weight: bold; }
+        .quote-card { background: white; padding: 25px; border-radius: 12px; max-width: 800px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 6px solid var(--accent); margin: 40px 20px; }
+        .quote-text { font-style: italic; color: #555; font-size: 1.2rem; display: block; }
+        .card-container { display: flex; gap: 30px; max-width: 1000px; justify-content: center; flex-wrap: wrap; padding: 20px; }
+        .action-card { background: white; width: 320px; padding: 40px 20px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: 0.3s; cursor: pointer; border: 2px solid transparent; }
+        .action-card:hover { transform: translateY(-10px); border-color: var(--accent); }
+        .icon { font-size: 60px; margin-bottom: 20px; display: block; }
+        .card-title { font-size: 1.4rem; color: var(--primary); margin-bottom: 15px; display: block; font-weight: bold; }
+        .card-desc { color: #7f8c8d; line-height: 1.5; margin-bottom: 25px; display: block; font-size: 0.9rem; }
+        .btn { text-decoration: none; padding: 12px 30px; border-radius: 30px; color: white; font-weight: bold; }
+        .btn-blue { background: var(--accent); }
+        .btn-green { background: var(--success); }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/">HOME</a>
+        <a href="/history">HISTORY DATABASE</a>
+    </div>
+
+    <div class="quote-card">
+        <span class="quote-text" id="quote">"Loading inspiration..."</span>
+        <small id="author"></small>
+    </div>
+
+    <div class="card-container">
+        <div class="action-card" onclick="window.location.href='/predict_vitals_page'">
+            <span class="icon">📊</span>
+            <span class="card-title">Clinical Vitals</span>
+            <span class="card-desc">Enter 13 clinical parameters manually for an XGBoost-driven heart risk assessment.</span>
+            <span class="btn btn-blue">Start Vitals Analysis</span>
+        </div>
+
+        <div class="action-card" onclick="window.location.href='/predict_image_page'">
+            <span class="icon">📸</span>
+            <span class="card-title">ECG Image AI</span>
+            <span class="card-desc">Upload ECG scan images for deep learning visual diagnosis using CNN architecture.</span>
+            <span class="btn btn-green">Upload ECG Scan</span>
+        </div>
+    </div>
+
+    <script>
+        const quotes = [
+            {t: "A healthy heart is a fountain of joy.", a: "Medical Proverb"},
+            {t: "Your heart is the engine of your life. Keep it tuned.", a: "Clinical Wisdom"},
+            {t: "Health is a state of complete harmony of the body, mind and spirit.", a: "B.K.S. Iyengar"}
+        ];
+        const q = quotes[Math.floor(Math.random() * quotes.length)];
+        document.getElementById('quote').innerText = `"${q.t}"`;
+        document.getElementById('author').innerText = `— ${q.a}`;
+    </script>
+</body>
+</html>

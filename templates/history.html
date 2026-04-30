@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Patient History | Heart-AI</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #3498db; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; }
+        
+        .navbar { background: var(--primary); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .navbar .logo { font-size: 1.5rem; font-weight: bold; text-decoration: none; color: white; letter-spacing: 1px; }
+        .navbar-links a { color: white; text-decoration: none; margin-left: 20px; font-weight: bold; transition: 0.3s; padding: 8px 15px; border-radius: 5px; }
+        .navbar-links a:hover { background: var(--accent); }
+        
+        .container { max-width: 1000px; margin: 40px auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h2 { color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-top: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: var(--primary); color: white; }
+        tr:hover { background-color: #f9f9f9; }
+        
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; display: inline-block;}
+        .badge.normal { background: #d5f5e3; color: #27ae60; }
+        .badge.danger { background: #fadbd8; color: #e74c3c; }
+        .badge.warning { background: #fdebd0; color: #e67e22; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <a href="/" class="logo">🫀 Heart-AI</a>
+    <div class="navbar-links">
+        <a href="/">Dashboard</a>
+        <a href="/history">History</a>
+    </div>
+</div>
+
+<div class="container">
+    <h2>Patient Diagnostic History</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Patient Name</th>
+                <th>Age</th>
+                <th>Diagnostic Type</th>
+                <th>AI Finding</th>
+                <th>Confidence</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rec in records %}
+            <tr>
+                <td>{{ rec.date.strftime('%Y-%m-%d') }}</td>
+                <td><strong>{{ rec.name }}</strong></td>
+                <td>{{ rec.age }}</td>
+                <td>{{ rec.diagnostic_type }}</td>
+                <td>
+                    <span class="badge 
+                        {% if 'Normal' in rec.prediction_result %}normal
+                        {% elif 'Unrecognized' in rec.prediction_result %}warning
+                        {% else %}danger{% endif %}">
+                        {{ rec.prediction_result }}
+                    </span>
+                </td>
+                <td>{{ rec.probability }}%</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; color: #777; padding: 20px;">No patient records found yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>
