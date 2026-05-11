@@ -96,7 +96,7 @@ def vital_page():
             conf = round(max(probability_array) * 100, 2)
             
             # FIXED LOGIC: 1 = High Risk, 0 = Low Risk
-            if model_prediction == 1:
+            if model_prediction == 0:
                 res = "High Risk of Heart Disease"
             else:
                 res = "Low Risk of Heart Disease"
