@@ -12,7 +12,6 @@ for i in range(1, 101):
         url = "https://picsum.photos/224/224"
         response = requests.get(url)
         
-        # Image Saved In Folder 
         image_name = f"{folder_path}/random_noise_{i}.jpg"
         with open(image_name, "wb") as file:
             file.write(response.content)
@@ -21,4 +20,4 @@ for i in range(1, 101):
     except Exception as e:
         print(f"❌ Failed to download image {i}: {e}")
 
-print("\n🎉 Success! random images saved in Unrecognized_Scan .")
+print("\nSuccess! random images saved in Unrecognized_Scan .")

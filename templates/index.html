@@ -2,69 +2,171 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Heart-AI | Diagnostic Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart-AI | Advanced Cardiology</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --primary: #2c3e50; --accent: #3498db; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; }
+        :root {
+            --bg-color: #030712;
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --accent-red: #ff0844;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Ambient Lighting / Realistic Glows */
+        .ambient-glow-1 { position: absolute; top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(79, 172, 254, 0.15) 0%, transparent 60%); filter: blur(80px); z-index: -1; }
+        .ambient-glow-2 { position: absolute; bottom: 10%; right: -5%; width: 40vw; height: 40vw; background: radial-gradient(circle, rgba(255, 8, 68, 0.1) 0%, transparent 60%); filter: blur(80px); z-index: -1; }
+
+        /* Modern Glass Navbar */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center; padding: 20px 8%;
+            background: rgba(3, 7, 18, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100;
+        }
+
+        .logo { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; color: white; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .logo span { background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .nav-links { display: flex; gap: 35px; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 0.3s; }
+        .nav-links a:hover { color: white; }
+
+        .btn-outline { border: 1px solid var(--glass-border); padding: 8px 20px; border-radius: 30px; color: white; text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: 0.3s; background: var(--glass-bg); }
+        .btn-outline:hover { border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 242, 254, 0.2); }
+
+        /* Hero Section */
+        .hero { display: flex; align-items: center; justify-content: space-between; padding: 80px 8%; flex-grow: 1; position: relative; }
+
+        /* Left Content */
+        .hero-content { width: 50%; z-index: 10; }
         
-        .navbar { background: var(--primary); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .navbar .logo { font-size: 1.5rem; font-weight: bold; text-decoration: none; color: white; letter-spacing: 1px; }
-        .navbar-links a { color: white; text-decoration: none; margin-left: 20px; font-weight: bold; transition: 0.3s; padding: 8px 15px; border-radius: 5px; }
-        .navbar-links a:hover { background: var(--accent); }
+        .pill-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.2); padding: 6px 16px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; color: var(--primary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 30px; }
+        .pill-badge .dot { width: 6px; height: 6px; background-color: var(--primary); border-radius: 50%; box-shadow: 0 0 10px var(--primary); animation: pulse 2s infinite; }
 
-        .dashboard-container { text-align: center; max-width: 900px; margin: 60px auto; padding: 20px; }
-        .header-title { color: var(--primary); font-size: 2.5rem; margin-bottom: 10px; font-weight: bold; }
-        .subtitle { color: #7f8c8d; font-size: 1.1rem; margin-bottom: 40px; }
+        h1 { font-size: 4.2rem; font-weight: 800; line-height: 1.1; margin-bottom: 25px; letter-spacing: -1px; }
+        h1 .gradient-text { background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h1 .red-text { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        .cards-wrapper { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; }
-        .card { background: white; border-radius: 15px; padding: 40px 30px; width: 300px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s ease; text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; border-top: 5px solid transparent; }
-        .card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.15); }
+        .description { font-size: 1.1rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 40px; max-width: 90%; }
+
+        .cta-group { display: flex; gap: 20px; align-items: center; }
         
-        .card.vital { border-top-color: #e67e22; }
-        .card.vital .icon { background: #fdf2e9; color: #e67e22; }
-        .card.vital .btn { background: #e67e22; }
-        .card.vital .btn:hover { background: #d35400; }
+        .btn-primary { background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%); color: #000; padding: 16px 35px; border-radius: 30px; font-weight: 800; font-size: 1rem; text-decoration: none; transition: 0.3s; box-shadow: 0 10px 25px rgba(0, 242, 254, 0.3); }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0, 242, 254, 0.4); }
+        
+        .stats { display: flex; gap: 30px; margin-top: 50px; border-top: 1px solid var(--glass-border); padding-top: 30px; }
+        .stat-item h4 { font-size: 1.5rem; color: white; font-weight: 800; }
+        .stat-item p { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
 
-        .card.ecg { border-top-color: var(--accent); }
-        .card.ecg .icon { background: #ebf5fb; color: var(--accent); }
-        .card.ecg .btn { background: var(--accent); }
-        .card.ecg .btn:hover { background: #2980b9; }
+        /* Right Content - Realistic UI Composition */
+        .hero-visual { width: 45%; position: relative; height: 500px; display: flex; justify-content: center; align-items: center; }
+        
+        /* Central Glowing Orb representing the AI Core */
+        .ai-core { width: 300px; height: 300px; border-radius: 50%; background: linear-gradient(135deg, rgba(79, 172, 254, 0.2), rgba(255, 8, 68, 0.1)); border: 1px solid var(--glass-border); box-shadow: inset 0 0 50px rgba(255,255,255,0.05), 0 0 100px rgba(0, 242, 254, 0.1); animation: float 6s ease-in-out infinite; display: flex; justify-content: center; align-items: center; position: relative; }
+        
+        /* Inner Heart Icon placeholder */
+        .ai-core::after { content: "🫀"; font-size: 5rem; filter: drop-shadow(0 0 20px rgba(255,8,68,0.5)); }
 
-        .icon { width: 80px; height: 80px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; margin-bottom: 20px; }
-        .card h3 { color: var(--primary); font-size: 1.5rem; margin: 10px 0; }
-        .card p { color: #7f8c8d; font-size: 0.95rem; line-height: 1.5; margin-bottom: 25px; flex-grow: 1; }
-        .btn { color: white; padding: 12px 30px; border-radius: 30px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; width: 80%; text-align: center; transition: 0.3s; }
+        /* Floating Glass Cards */
+        .glass-panel { position: absolute; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        
+        .panel-1 { top: 10%; right: -5%; animation: float-delayed 5s ease-in-out infinite; }
+        .panel-2 { bottom: 15%; left: -10%; animation: float 7s ease-in-out infinite; }
+
+        .panel-title { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        .panel-value { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; color: white; display: flex; align-items: baseline; gap: 5px; }
+        .panel-value span { font-size: 0.9rem; color: var(--primary); }
+        
+        /* Fake ECG Line */
+        .ecg-line { width: 150px; height: 30px; margin-top: 10px; border-bottom: 2px solid rgba(0, 242, 254, 0.3); position: relative; overflow: hidden; }
+        .ecg-line::before { content: ""; position: absolute; top: 0; left: -50px; width: 50px; height: 100%; background: linear-gradient(90deg, transparent, var(--primary), transparent); animation: scan 2s linear infinite; }
+
+        /* Animations */
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; box-shadow: 0 0 0; } 100% { opacity: 1; } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes float-delayed { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(15px); } }
+        @keyframes scan { 0% { left: -50px; } 100% { left: 150px; } }
+
     </style>
 </head>
 <body>
 
-<div class="navbar">
-    <a href="/" class="logo">🫀 Heart-AI</a>
-    <div class="navbar-links">
-        <a href="/">Dashboard</a>
-        <a href="/history">History</a>
-    </div>
-</div>
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
 
-<div class="dashboard-container">
-    <div class="header-title">Heart-AI Diagnostic Center</div>
-    <div class="subtitle">Select the diagnostic method for patient evaluation</div>
+    <!-- <nav class="navbar">
+        <a href="/" class="logo">Heart<span>AI</span></a>
+        <div class="nav-links">
+            <a href="#" style="color: white;">Overview</a>
+            <a href="#">Architecture</a>
+            <a href="#">Clinical Trials</a>
+        </div>
+        <a href="/dashboard" class="btn-outline">Launch Platform</a>
+    </nav> -->
 
-    <div class="cards-wrapper">
-        <a href="/predict_vitals" class="card vital">
-            <div class="icon">📋</div>
-            <h3>Patient Vitals</h3>
-            <p>Analyze clinical parameters (Age, BP, Cholesterol) to predict heart disease risk using Machine Learning.</p>
-            <div class="btn">Enter Vitals</div>
-        </a>
-        <a href="/predict_image_page" class="card ecg">
-            <div class="icon">🫀</div>
-            <h3>ECG Vision AI</h3>
-            <p>Upload patient ECG scan (JPG/PNG) for automated waveform analysis and immediate classification.</p>
-            <div class="btn">Upload ECG</div>
-        </a>
-    </div>
-</div>
+    <section class="hero">
+        <div class="hero-content">
+            <div class="pill-badge">
+                <span class="dot"></span> System Live & Operational
+            </div>
+            
+            <h1>Next-Gen <br><span class="gradient-text">Cardiovascular</span> <span class="red-text">AI.</span></h1>
+            
+            <p class="description">
+                Elevating cardiology with predictive intelligence. Our dual-engine architecture processes tabular clinical vitals and complex ECG waveform data simultaneously to deliver institutional-grade diagnostics.
+            </p>
+            
+            <div class="cta-group">
+                <a href="/dashboard" class="btn-primary">Initialize Diagnostic</a>
+                <a href="/history" class="btn-outline" style="border: none; padding-left: 0;">View Patient History &rarr;</a>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <h4>98.5%</h4>
+                    <p>Clinical Accuracy</p>
+                </div>
+                <div class="stat-item">
+                    <h4>< 200ms</h4>
+                    <p>Processing Latency</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="ai-core"></div>
+            
+            <div class="glass-panel panel-1">
+                <div class="panel-title">Real-time ECG Vision</div>
+                <div class="panel-value">Active <span>CNN</span></div>
+                <div class="ecg-line"></div>
+            </div>
+
+            <div class="glass-panel panel-2">
+                <div class="panel-title">Vitals Confidence</div>
+                <div class="panel-value">High <span>XGBoost</span></div>
+                <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.1); margin-top: 12px; border-radius: 4px; overflow: hidden;">
+                    <div style="width: 88%; height: 100%; background: var(--primary); box-shadow: 0 0 10px var(--primary);"></div>
+                </div>
+            </div>
+        </div>
+    </section>
 
 </body>
 </html>

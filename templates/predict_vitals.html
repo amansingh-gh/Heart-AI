@@ -4,81 +4,188 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clinical Vitals Analysis | Heart-AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --primary: #2c3e50; --success: #27ae60; --error: #e74c3c; --accent: #3498db; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; padding: 0;}
-        
-        /* --- NAYA NAVBAR CSS --- */
-        .navbar { background: var(--primary); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        .navbar .logo { font-size: 1.5rem; font-weight: bold; text-decoration: none; color: white; letter-spacing: 1px; }
-        .navbar-links a { color: white; text-decoration: none; margin-left: 20px; font-weight: bold; transition: 0.3s; padding: 8px 15px; border-radius: 5px; }
-        .navbar-links a:hover { background: var(--accent); }
-        /* ----------------------- */
+        :root {
+            --bg-color: #030712;
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --success: #00ff88;
+            --danger: #ff0844;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-bg: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
 
-        .container { max-width: 800px; margin: 0 auto 40px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* YAHAN FIX KIYA HAI: Body height is locked to screen, prevent external scroll */
+        html, body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh; /* Strict viewport height */
+            max-width: 100%;
+            overflow: hidden; /* No external scrollbars */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Ambient Glows */
+        .ambient-glow-1 { position: fixed; top: -20%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(79, 172, 254, 0.1) 0%, transparent 60%); filter: blur(80px); z-index: -1; pointer-events: none; }
+        .ambient-glow-2 { position: fixed; bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(255, 8, 68, 0.08) 0%, transparent 60%); filter: blur(80px); z-index: -1; pointer-events: none; }
+
+        /* Modern Navbar (Thinner height) */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center; padding: 12px 8%;
+            background: rgba(3, 7, 18, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); z-index: 100;
+        }
+        .logo { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; color: white; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .logo span { background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links { display: flex; gap: 35px; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 0.3s; }
+        .nav-links a:hover { color: white; }
+
+        /* Main Wrapper to center container vertically */
+        .main-wrapper {
+            flex-grow: 1; /* Use remaining body height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px; /* Space from screen edges */
+            width: 100%;
+            z-index: 10;
+        }
+
+        /* YAHAN FIX KIYA HAI: Glass Panel with fixed height & internal scroll */
+        .container {
+            max-width: 900px; 
+            width: 100%;
+            padding: 30px; /* Reduced from 40px */
+            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            
+            max-height: calc(100vh - 100px); /* FORM HEIGHT ADJUST: Will not exceed available screen minus navbar space */
+            overflow-y: auto; /* Internal Vertical Scrolling ENABLED */
+            scrollbar-width: thin; /* Modern thin scrollbar */
+            scrollbar-color: var(--glass-border) transparent;
+        }
+        
+        /* Custom scrollbar styling for webkit */
+        .container::-webkit-scrollbar { width: 6px; }
+        .container::-webkit-scrollbar-thumb { background-color: var(--glass-border); border-radius: 10px; }
+        .container::-webkit-scrollbar-track { background: transparent; }
+
+        h2 { font-family: 'Space Grotesk', sans-serif; font-size: 2.1rem; margin-bottom: 8px; letter-spacing: -1px; text-align: center; }
+        h2 span { background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid var(--glass-border); }
+
+        /* Form Grid (More compact) */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; } /* Gap reduced from 20px */
         .full-width { grid-column: 1 / -1; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; color: #444; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; transition: 0.3s; }
-        .input-error { border: 2px solid var(--error) !important; background-color: #fadbd8 !important; }
-        .error-msg { color: var(--error); font-size: 12px; font-weight: bold; display: none; margin-top: 5px; }
-        button { width: 100%; padding: 15px; background: var(--success); color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; margin-top: 20px; font-weight: bold; transition: 0.3s; }
-        button:hover { background: #219150; transform: translateY(-2px); }
-        .result { margin-top: 20px; padding: 20px; text-align: center; border-radius: 8px; font-weight: bold; font-size: 1.1rem; }
-        .high-risk { background: #fdedec; color: #c0392b; border: 2px solid #e74c3c; }
-        .low-risk { background: #eafaf1; color: #27ae60; border: 2px solid #2ecc71; }
+        
+        /* Compact Input Groups */
+        .input-group { background: rgba(255, 255, 255, 0.02); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
+        .input-group:hover { background: rgba(255, 255, 255, 0.04); border-color: rgba(255,255,255,0.1); }
+        
+        /* Smaller label for emojis */
+        label { display: flex; align-items: center; gap: 6px; font-weight: 600; margin-bottom: 5px; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        
+        input, select { 
+            width: 100%; padding: 10px; background: rgba(0, 0, 0, 0.3); /* Padding reduced from 12px */
+            border: 1px solid var(--glass-border); border-radius: 8px; color: white; 
+            font-size: 0.9rem; transition: 0.3s; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        select option { background-color: #0f172a; color: white; }
+        input:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 15px rgba(0, 242, 254, 0.2); }
+        input::placeholder { color: #475569; }
+
+        /* Error States (JS driven) */
+        .input-error { border: 1px solid var(--danger) !important; background: rgba(255, 8, 68, 0.1) !important; }
+        .error-msg { color: var(--danger); font-size: 0.7rem; font-weight: bold; display: none; margin-top: 6px; }
+
+        /* Compact Submit Button */
+        button { 
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%); 
+            color: #000; border: none; padding: 16px; border-radius: 12px; font-size: 0.95rem; 
+            cursor: pointer; transition: 0.3s; margin-top: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 10px 25px rgba(0, 242, 254, 0.2); width: 100%;
+        }
+        button:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0, 242, 254, 0.4); }
+
+        /* Compact Result Panel */
+        .result { margin-top: 20px; padding: 15px; text-align: center; border-radius: 16px; font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 700; display: flex; flex-direction: column; gap: 5px; }
+        .prob-text { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; color: var(--text-muted); font-weight: 400; text-transform: uppercase; letter-spacing: 1px; }
+        .prob-text span { font-weight: bold; font-size: 1.1rem; }
+        
+        .high-risk { background: rgba(255, 8, 68, 0.1); border: 1px solid rgba(255, 8, 68, 0.3); color: var(--danger); }
+        .high-risk span { color: var(--danger); }
+        .low-risk { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); color: var(--success); }
+        .low-risk span { color: var(--success); }
+
     </style>
 </head>
 <body>
     
-    <!-- YAHAN AAGAYA AAPKA NAYA NAVBAR -->
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
+
     <div class="navbar">
-        <a href="/" class="logo">🫀 Heart-AI</a>
-        <div class="navbar-links">
-            <a href="/">Dashboard</a>
-            <a href="/history">History</a>
+        <a href="/" class="logo">Heart<span>AI</span></a>
+        <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/history">Patient History</a>
         </div>
     </div>
 
-    <div class="container">
-        <h2 style="text-align: center; color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-top: 0;">Clinical Vitals Report</h2>
-        
-        <form action="/predict_vitals" method="post">
-            <div class="form-grid">
-                <div class="full-width"><label>Patient Name</label><input type="text" name="patient_name" required placeholder="E.g., John Doe"></div>
-                <div><label>Age</label><input type="number" name="age" min="20" max="100" required placeholder="20-100"></div>
-                <div><label>Sex</label><select name="sex"><option value="1">Male</option><option value="0">Female</option></select></div>
-                <div><label>Chest Pain (0-3)</label><input type="number" name="cp" min="0" max="3" required placeholder="0-3"></div>
-                <div><label>Resting BP</label><input type="number" name="trestbps" min="80" max="200" required placeholder="80-200"></div>
-                <div><label>Cholesterol</label><input type="number" name="chol" min="100" max="500" required placeholder="100-500"></div>
-                <div><label>FBS > 120</label><select name="fbs"><option value="0">False</option><option value="1">True</option></select></div>
-                <div><label>Resting ECG (0-2)</label><input type="number" name="restecg" min="0" max="2" required placeholder="0-2"></div>
-                <div><label>Max Heart Rate</label><input type="number" name="thalach" min="60" max="220" required placeholder="60-220"></div>
-                <div><label>Ex. Angina</label><select name="exang"><option value="0">No</option><option value="1">Yes</option></select></div>
-                <div><label>Oldpeak</label><input type="number" step="0.1" name="oldpeak" min="0" max="6" required placeholder="0-6"></div>
-                <div><label>ST Slope (0-2)</label><input type="number" name="slope" min="0" max="2" required placeholder="0-2"></div>
-                <div><label>Major Vessels (0-3)</label><input type="number" name="ca" min="0" max="3" required placeholder="0-3"></div>
-                <div><label>Thalassemia (1-3)</label><input type="number" name="thal" min="1" max="3" required placeholder="1-3"></div>
+    <div class="main-wrapper">
+        <div class="container">
+            <h2>Clinical<span> Vitals</span></h2>
+            <div class="subtitle">Enter patient parameters</div>
+            
+            <form action="/predict_vitals" method="post">
+                <div class="form-grid">
+                    <div class="input-group full-width"><label>👤 Patient Name</label><input type="text" name="patient_name" required placeholder="E.g., John Doe"></div>
+                    <div class="input-group"><label>⏳ Age</label><input type="number" name="age" min="20" max="100" required placeholder="20-100 Years"></div>
+                    <div class="input-group"><label>🚻 Sex</label><select name="sex"><option value="1">Male</option><option value="0">Female</option></select></div>
+                    <div class="input-group"><label>🫀 Chest Pain Type (0-3)</label><input type="number" name="cp" min="0" max="3" required placeholder="0: None, 3: Severe"></div>
+                    <div class="input-group"><label>🩸 Resting BP (mm Hg)</label><input type="number" name="trestbps" min="80" max="200" required placeholder="80 - 200"></div>
+                    <div class="input-group"><label>🧪 Serum Cholestoral (mg/dl)</label><input type="number" name="chol" min="100" max="500" required placeholder="100 - 500"></div>
+                    <div class="input-group"><label>🍬 Fasting Blood Sugar > 120</label><select name="fbs"><option value="0">False (Normal)</option><option value="1">True (High)</option></select></div>
+                    <div class="input-group"><label>📈 Resting ECG Results (0-2)</label><input type="number" name="restecg" min="0" max="2" required placeholder="0 - 2"></div>
+                    <div class="input-group"><label>⚡ Max Heart Rate Achieved</label><input type="number" name="thalach" min="60" max="220" required placeholder="60 - 220"></div>
+                    <div class="input-group"><label>🏃‍♂️ Exercise Induced Angina</label><select name="exang"><option value="0">No</option><option value="1">Yes</option></select></div>
+                    <div class="input-group"><label>📉 ST Depression (Oldpeak)</label><input type="number" step="0.1" name="oldpeak" min="0" max="6" required placeholder="0.0 - 6.0"></div>
+                    <div class="input-group"><label>〽️ Slope of Peak ST (0-2)</label><input type="number" name="slope" min="0" max="2" required placeholder="0 - 2"></div>
+                    <div class="input-group"><label>🩻 Major Vessels Colored (0-3)</label><input type="number" name="ca" min="0" max="3" required placeholder="0 - 3"></div>
+                    <div class="input-group"><label>🧬 Thalassemia (1-3)</label><input type="number" name="thal" min="1" max="3" required placeholder="1: Normal, 3: Reversible"></div>
+                    
+                    <button type="submit">Execute ML Analysis</button>
+                </div>
+            </form>
+
+            {% if prediction_text %}
+            <div class="result {% if 'High' in prediction_text %}high-risk{% else %}low-risk{% endif %}">
+                {{ prediction_text }}
+                <div class="prob-text">AI Confidence Score: <span>{{ probability }}%</span></div>
             </div>
-            <button type="submit">Analyze Vitals</button>
-        </form>
-
-        {% if prediction_text %}
-        <div class="result {% if 'High' in prediction_text %}high-risk{% else %}low-risk{% endif %}">
-            {{ prediction_text }} (Probability: {{ probability }}%)
+            {% endif %}
         </div>
-        {% endif %}
-    </div>
-
-    <script>
+    </div> <script>
         document.querySelectorAll('input[type="number"]').forEach(input => {
             let errorSpan = document.createElement('div');
             errorSpan.className = 'error-msg';
             input.parentNode.appendChild(errorSpan);
+            
             input.addEventListener('input', function() {
                 if (this.value !== "" && (parseFloat(this.value) < parseFloat(this.min) || parseFloat(this.value) > parseFloat(this.max))) {
                     this.classList.add('input-error');
-                    errorSpan.innerText = `⚠️ Range: ${this.min}-${this.max}`;
+                    errorSpan.innerText = `⚠️ Valid range: ${this.min} - ${this.max}`;
                     errorSpan.style.display = 'block';
                 } else {
                     this.classList.remove('input-error');

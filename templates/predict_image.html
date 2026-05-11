@@ -2,72 +2,160 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ECG AI Diagnostic | Heart-AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; }
-        
-        .navbar { background: var(--primary); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        .navbar .logo { font-size: 1.5rem; font-weight: bold; text-decoration: none; color: white; letter-spacing: 1px; }
-        .navbar-links a { color: white; text-decoration: none; margin-left: 20px; font-weight: bold; transition: 0.3s; padding: 8px 15px; border-radius: 5px; }
-        .navbar-links a:hover { background: var(--accent); }
+        :root {
+            --bg-color: #030712;
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --success: #00ff88;
+            --danger: #ff0844;
+            --warning: #f39c12;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-bg: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
 
-        .container { max-width: 800px; margin: 0 auto 40px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        h2 { color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
-        
-        .form-group { margin-bottom: 20px; text-align: left; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: #444; }
-        input[type="text"], input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        
-        .upload-section { border: 2px dashed var(--accent); padding: 30px; border-radius: 10px; background: #f9fcff; text-align: center; margin-top: 20px; }
-        .btn-submit { background: var(--success); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-size: 1.1rem; cursor: pointer; transition: 0.3s; margin-top: 20px; width: 100%; font-weight: bold; }
-        .btn-submit:hover { background: #219150; transform: translateY(-2px); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .report-card { margin-top: 40px; border: 1px solid #ddd; border-radius: 12px; overflow: hidden; }
-        .report-header { background: var(--primary); color: white; padding: 15px; text-align: center; font-weight: bold; letter-spacing: 1px; }
-        .report-body { padding: 25px; display: flex; gap: 20px; align-items: flex-start; }
-        .result-box { flex: 1; }
-        .result-tag { font-size: 1.5rem; font-weight: bold; color: #e74c3c; margin: 10px 0; }
-        .normal { color: var(--success) !important; }
-        .ecg-preview { width: 250px; border-radius: 8px; border: 1px solid #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; font-size: 0.9rem; }
+        html, body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            max-width: 100%;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient Lighting / Realistic Glows */
+        .ambient-glow-1 { position: fixed; top: -20%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(79, 172, 254, 0.1) 0%, transparent 60%); filter: blur(80px); z-index: -1; pointer-events: none; }
+        .ambient-glow-2 { position: fixed; bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(255, 8, 68, 0.08) 0%, transparent 60%); filter: blur(80px); z-index: -1; pointer-events: none; }
+
+        /* Modern Glass Navbar */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center; padding: 15px 8%;
+            background: rgba(3, 7, 18, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); z-index: 100; position: sticky; top: 0;
+        }
+
+        .logo { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; color: white; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .logo span { background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .nav-links { display: flex; gap: 35px; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 0.3s; }
+        .nav-links a:hover { color: white; }
+
+        /* Container & Glass Panel */
+        .container {
+            max-width: 850px; margin: 50px auto; padding: 40px;
+            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            position: relative; z-index: 10;
+        }
+
+        h2 { font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; margin-bottom: 30px; letter-spacing: -1px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; }
+        h2 span { background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* Form Styling */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .form-group { text-align: left; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-muted); font-size: 0.9rem; letter-spacing: 0.5px; }
         
-        .pdf-btn { display: inline-block; background: var(--primary); color: white; text-decoration: none; padding: 10px 20px; margin-top: 15px; border-radius: 5px; font-weight: bold; transition: 0.3s; font-size: 0.9rem; border: 1px solid #1a252f; }
-        .pdf-btn:hover { background: #1a252f; }
+        input[type="text"], input[type="number"] { 
+            width: 100%; padding: 14px; background: rgba(255, 255, 255, 0.03); 
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white; 
+            font-size: 1rem; transition: 0.3s; box-sizing: border-box;
+        }
+        input[type="text"]:focus, input[type="number"]:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 15px rgba(0, 242, 254, 0.2); background: rgba(255, 255, 255, 0.05); }
+        input::placeholder { color: #475569; }
+
+        .upload-section { 
+            border: 2px dashed rgba(0, 242, 254, 0.4); padding: 35px 20px; border-radius: 16px; 
+            background: rgba(0, 242, 254, 0.03); text-align: center; margin-top: 25px; transition: 0.3s;
+        }
+        .upload-section:hover { background: rgba(0, 242, 254, 0.08); border-color: var(--primary); }
+        input[type="file"] { color: var(--text-muted); margin-top: 10px; font-size: 0.9rem; }
+        input[type="file"]::file-selector-button { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: 0.3s; margin-right: 15px; }
+        input[type="file"]::file-selector-button:hover { background: var(--primary); color: black; border-color: var(--primary); }
+
+        .btn-submit { 
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%); 
+            color: #000; border: none; padding: 16px 40px; border-radius: 50px; font-size: 1rem; 
+            cursor: pointer; transition: 0.3s; margin-top: 30px; width: 100%; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 10px 25px rgba(0, 242, 254, 0.2);
+        }
+        .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0, 242, 254, 0.4); }
+
+        /* Report Card Styling */
+        .report-card { margin-top: 40px; border: 1px solid var(--glass-border); border-radius: 16px; overflow: hidden; background: rgba(0,0,0,0.2); }
+        .report-header { background: rgba(255,255,255,0.05); color: white; padding: 15px; text-align: center; font-weight: 800; letter-spacing: 2px; font-size: 0.9rem; text-transform: uppercase; border-bottom: 1px solid var(--glass-border); }
+        
+        .report-body { padding: 30px; display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+        .result-box { flex: 1; min-width: 300px; }
+        
+        .result-tag { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; color: var(--danger); margin: 15px 0; }
+        .normal { color: var(--success) !important; text-shadow: 0 0 15px rgba(0,255,136,0.4); }
+        
+        .ecg-preview { width: 100%; max-width: 280px; border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 15px 30px rgba(0,0,0,0.5); object-fit: cover; }
+        
+        .insight-box { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid var(--primary); }
+        .insight-box h4 { margin-top: 0; color: white; font-size: 1.1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        
+        .pdf-btn { 
+            display: inline-block; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); 
+            color: white; text-decoration: none; padding: 12px 25px; margin-top: 15px; border-radius: 50px; 
+            font-weight: 600; transition: 0.3s; font-size: 0.9rem; 
+        }
+        .pdf-btn:hover { background: white; color: black; box-shadow: 0 0 15px rgba(255,255,255,0.3); }
+
+        /* Adjusted dark mode text colors inside Jinja block */
+        .text-healthy { color: var(--success); }
+        .text-invalid { color: #ff6b6b; }
+        .text-caution { color: var(--warning); }
+        .text-critical { color: var(--danger); font-weight: bold; text-shadow: 0 0 10px rgba(255,8,68,0.5); }
+        .text-history { color: #c084fc; }
+
     </style>
 </head>
 <body>
 
-<div class="navbar">
-    <a href="/" class="logo">🫀 Heart-AI</a>
-    <div class="navbar-links">
-        <a href="/">Dashboard</a>
-        <a href="/history">History</a>
+<div class="ambient-glow-1"></div>
+<div class="ambient-glow-2"></div>
+
+<nav class="navbar">
+    <a href="/" class="logo">Heart<span>AI</span></a>
+    <div class="nav-links">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/history">Patient History</a>
     </div>
-</div>
+</nav>
 
 <div class="container">
-    <h2>ECG Vision Analysis System</h2>
+    <h2>ECG Vision <span>Analysis</span></h2>
     
     <form action="/predict_image" method="post" enctype="multipart/form-data">
         <div class="info-grid">
             <div class="form-group">
-                <label>Patient Full Name</label>
+                <label>PATIENT FULL NAME</label>
                 <input type="text" name="patient_name" placeholder="e.g. Rahul Sharma" required>
             </div>
             <div class="form-group">
-                <label>Patient Age</label>
+                <label>PATIENT AGE</label>
                 <input type="number" name="age" placeholder="e.g. 45" required>
             </div>
         </div>
 
         <div class="upload-section">
-            <label>Upload ECG Scan (JPG/PNG)</label>
+            <label style="color: white; font-size: 1.1rem; margin-bottom: 5px;">Upload ECG Scan Image</label>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Accepted formats: JPG, PNG. Ensure waveform is clearly visible.</p>
             <input type="file" name="ecg_image" accept="image/*" required>
-            <p style="font-size: 0.8rem; color: #7f8c8d;">Ensure the waveform is clearly visible for accurate AI interpretation.</p>
         </div>
 
-        <button type="submit" class="btn-submit">GENERATE AI DIAGNOSIS</button>
+        <button type="submit" class="btn-submit">Initialize Neural Scan</button>
     </form>
 
     {% if prediction_text %}
@@ -75,35 +163,41 @@
         <div class="report-header">OFFICIAL AI DIAGNOSTIC REPORT</div>
         <div class="report-body">
             <div class="result-box">
-                <p style="margin-top:0;"><strong>Patient:</strong> {{ p_name }} | <strong>Age:</strong> {{ p_age }}</p>
-                <p style="margin-bottom: 5px;">Primary Findings:</p>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">
+                    <strong style="color: white;">Patient:</strong> {{ p_name }} &nbsp;|&nbsp; 
+                    <strong style="color: white;">Age:</strong> {{ p_age }}
+                </p>
+                <p style="margin-top: 15px; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Primary Findings:</p>
                 
                 <div class="result-tag {% if 'Normal' in prediction_text %}normal{% endif %}">
                     {{ prediction_text }}
                 </div>
-                <p style="margin-top: 5px;"><strong>AI Confidence:</strong> {{ probability }}%</p>
+                
+                <p style="color: var(--text-muted);">
+                    <strong style="color: white;">AI Confidence Score:</strong> <span style="color: var(--primary); font-weight: bold;">{{ probability }}%</span>
+                </p>
 
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px; margin-bottom: 20px; border-left: 4px solid #3498db;">
-                    <h4 style="margin-top: 0; color: #2c3e50; font-size: 1rem;">🩺 AI Medical Insight:</h4>
-                    <p style="font-size: 0.9rem; color: #444; line-height: 1.5; margin-bottom: 0;">
+                <div class="insight-box">
+                    <h4>🫀 AI Medical Insight</h4>
+                    <p style="font-size: 0.95rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 0;">
                         {% if 'Normal' in prediction_text %}
-                            <strong style="color: #27ae60;">Status: Healthy.</strong> Waves P, QRS, and T are in standard formation. The heart rhythm appears regular with no immediate anomalies detected. Routine checkups are advised to maintain cardiovascular health.
+                            <strong class="text-healthy">Status: Healthy.</strong> Waves P, QRS, and T are in standard formation. The heart rhythm appears regular with no immediate anomalies detected. Routine checkups are advised to maintain cardiovascular health.
                         {% elif 'Unrecognized Scan' in prediction_text %}
-                            <strong style="color: #c0392b;">⚠️ Invalid Image Detected:</strong> The AI could not confidently recognize this as a valid ECG waveform. Please ensure you are uploading a clear, high-quality image of an ECG strip. Do not upload unrelated images.
+                            <strong class="text-invalid">⚠️ Invalid Image Detected:</strong> The AI could not confidently recognize this as a valid ECG waveform. Please ensure you are uploading a clear, high-quality image of an ECG strip.
                         {% elif 'Abnormal Heartbeat' in prediction_text %}
-                            <strong style="color: #f39c12;">Caution:</strong> Irregularities detected in the heart's rhythm or electrical conduction. This could indicate arrhythmias (like premature contractions or atrial fibrillation). A clinical correlation with a Holter monitor is recommended.
+                            <strong class="text-caution">Caution:</strong> Irregularities detected in the heart's rhythm or electrical conduction. This could indicate arrhythmias (like premature contractions or atrial fibrillation). A clinical correlation with a Holter monitor is recommended.
                         {% elif 'Myocardial Infarction' in prediction_text %}
-                            <strong style="color: #e74c3c;">CRITICAL ALERT:</strong> AI detected potential ST-segment elevation or Q-wave abnormalities. This is a strong indicator of an active heart attack. <strong>Seek immediate emergency medical attention.</strong>
-                        {% elif 'Post MI' in prediction_text %}
-                            <strong style="color: #8e44ad;">Historical Note:</strong> Patterns suggest historical damage to the heart muscle from a previous heart attack (e.g., pathological Q waves). Regular cardiology follow-ups are recommended for ongoing management.
+                            <strong class="text-critical">CRITICAL ALERT:</strong> AI detected potential ST-segment elevation or Q-wave abnormalities. This is a strong indicator of an active heart attack. <strong>Seek immediate emergency medical attention.</strong>
+                        {% elif 'Post MI History' in prediction_text %}
+                            <strong class="text-history">Historical Note:</strong> Patterns suggest historical damage to the heart muscle from a previous heart attack (e.g., pathological Q waves). Regular cardiology follow-ups are recommended for ongoing management.
                         {% endif %}
                     </p>
                 </div>
 
-                <hr style="border: none; border-top: 1px solid #eee;">
+                <hr style="border: none; border-top: 1px solid var(--glass-border); margin: 25px 0;">
                 
-                <p style="font-size: 0.85rem; color: #666;">
-                    <strong>Recommendation:</strong> 
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
+                    <strong style="color: white;">Recommendation:</strong> 
                     {% if 'Normal' in prediction_text %}
                         No immediate cardiac concerns detected.
                     {% elif 'Unrecognized Scan' in prediction_text %}
@@ -115,11 +209,12 @@
 
                 {% if 'Unrecognized Scan' not in prediction_text %}
                 <a href="/download_report/{{ p_name }}/{{ p_age }}/{{ prediction_text }}/{{ probability }}" class="pdf-btn">
-                   📄 Download PDF Report
+                    📄 Download PDF Report
                 </a>
                 {% endif %}
 
             </div>
+            
             <img src="{{ user_image }}" class="ecg-preview" alt="Uploaded Scan">
         </div>
     </div>

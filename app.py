@@ -1,19 +1,23 @@
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
-from flask import Flask, render_template, request, redirect, send_file
+import numpy as np
+import joblib 
+import pandas as pd
+import random
+from datetime import datetime
+from flask import Flask, render_template, request, redirect, send_file, make_response
 from flask_sqlalchemy import SQLAlchemy
+
+# ML Tools
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
-import numpy as np
+
+# PDF Tool
 from fpdf import FPDF
-from datetime import datetime
 
 app = Flask(__name__)
 
-# ==========================================
 # DATABASE CONFIGURATION
-# ==========================================
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///heart_database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -30,27 +34,26 @@ class PatientHistory(db.Model):
 with app.app_context():
     db.create_all()
 
-# ==========================================
 # MODEL LOADING
-# ==========================================
-# Make sure your model file is in the same folder, or update the path (e.g., 'Models/ecg_vision_model_light.h5')
 ecg_model = load_model('ecg_vision_model.h5')
+vitals_model = joblib.load('vitals_model.pkl')
 
-# The exact order based on alphanumeric sorting of folders
 ecg_classes = [
-    'Unrecognized_Scan',         # 0
+    'Unrecognized Scan',         # 0
     'Abnormal Heartbeat',        # 1
     'Myocardial Infarction',     # 2
     'Normal',                    # 3
     'Post MI History'            # 4
 ]
 
-# ==========================================
 # ROUTES (PAGES)
-# ==========================================
 @app.route('/')
 def home():
     return render_template('index.html')
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('landingPage.html')
 
 @app.route('/history')
 def history():
@@ -61,60 +64,65 @@ def history():
 def predict_image_page():
     return render_template('predict_image.html')
 
-
-# ==========================================
-# VITALS PREDICTION LOGIC (FIXED ROUTING)
-# ==========================================
 @app.route('/predict_vitals', methods=['GET', 'POST'])
 def vital_page():
     if request.method == 'POST':
-        # 1. Fetching all data from the HTML form
-        name = request.form.get('patient_name', 'Unknown')
-        age = float(request.form.get('age', 0))
-        sex = float(request.form.get('sex', 0))
-        cp = float(request.form.get('cp', 0))
-        trestbps = float(request.form.get('trestbps', 0))
-        chol = float(request.form.get('chol', 0))
-        fbs = float(request.form.get('fbs', 0))
-        restecg = float(request.form.get('restecg', 0))
-        thalach = float(request.form.get('thalach', 0))
-        exang = float(request.form.get('exang', 0))
-        oldpeak = float(request.form.get('oldpeak', 0))
-        slope = float(request.form.get('slope', 0))
-        ca = float(request.form.get('ca', 0))
-        thal = float(request.form.get('thal', 0))
+        try:
+            name = request.form.get('patient_name', 'Unknown')
+            age = float(request.form.get('age') or 0)
+            sex = float(request.form.get('sex') or 0)
+            cp = float(request.form.get('cp') or 0)
+            trestbps = float(request.form.get('trestbps') or 0)
+            chol = float(request.form.get('chol') or 0)
+            fbs = float(request.form.get('fbs') or 0)
+            restecg = float(request.form.get('restecg') or 0)
+            thalach = float(request.form.get('thalach') or 0)
+            exang = float(request.form.get('exang') or 0)
+            oldpeak = float(request.form.get('oldpeak') or 0)
+            slope = float(request.form.get('slope') or 0)
+            ca = float(request.form.get('ca') or 0)
+            thal = float(request.form.get('thal') or 0)
 
-        # ----------------------------------------------------
-        # 2. YOUR ML MODEL LOGIC WILL GO HERE IN FUTURE
-        # Example: model = joblib.load('vitals_model.pkl')
-        # prediction = model.predict([[age, sex, cp, trestbps...]])
-        # ----------------------------------------------------
+            feature_names = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 
+                             'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal']
+            
+            input_df = pd.DataFrame([[age, sex, cp, trestbps, chol, fbs, restecg, 
+                                      thalach, exang, oldpeak, slope, ca, thal]], 
+                                    columns=feature_names)
 
-        # DUMMY PREDICTION (To check if routing and UI are working perfectly)
-        res = "High Risk of Heart Disease" 
-        conf = 88.5 
+            model_prediction = vitals_model.predict(input_df)[0]
+            probability_array = vitals_model.predict_proba(input_df)[0]
 
-        # Save Vitals prediction to Database
-        new_rec = PatientHistory(
-            name=name, 
-            age=int(age), 
-            prediction_result=res, 
-            probability=conf, 
-            diagnostic_type="Clinical Vitals AI"
-        )
-        db.session.add(new_rec)
-        db.session.commit()
+            conf = round(max(probability_array) * 100, 2)
+            
+            # FIXED LOGIC: 1 = High Risk, 0 = Low Risk
+            if model_prediction == 1:
+                res = "High Risk of Heart Disease"
+            else:
+                res = "Low Risk of Heart Disease"
 
-        # Send data back to the same page to display results
-        return render_template('predict_vitals.html', prediction_text=res, probability=conf)
+            new_rec = PatientHistory(
+                name=name, 
+                age=int(age), 
+                prediction_result=res, 
+                probability=conf, 
+                diagnostic_type="Clinical Vitals AI"
+            )
+            db.session.add(new_rec)
+            db.session.commit()
 
-    # If it's a GET request (just opening the page)
+            return render_template('vitals_result.html', 
+                                   prediction_text=res, 
+                                   probability=conf,
+                                   name=name, age=age, 
+                                   bp=trestbps, chol=chol, hr=thalach)
+            
+        except Exception as e:
+            print(f"Error: {e}")
+            return render_template('predict_vitals.html', prediction_text="Error processing data.", probability=0)
+
     return render_template('predict_vitals.html')
 
-
-# ==========================================
-# ECG AI PREDICTION LOGIC
-# ==========================================
 @app.route('/predict_image', methods=['POST'])
 def predict_image():
     if 'ecg_image' not in request.files:
@@ -131,25 +139,18 @@ def predict_image():
         path = os.path.join('static/uploads', file.filename)
         file.save(path)
         
-        # Standard Custom CNN Preprocessing
         img = image.load_img(path, target_size=(224, 224))
-        img_arr = image.img_to_array(img) / 255.0  # Proper scaling for Custom CNN
+        img_arr = image.img_to_array(img) / 255.0
         img_arr = np.expand_dims(img_arr, axis=0)
         
         preds = ecg_model.predict(img_arr)
         idx = np.argmax(preds)
         conf = round(np.max(preds) * 100, 2)
-        
         res = ecg_classes[idx]
         
-        if res == 'Unrecognized_Scan':
-            res = 'Unrecognized Scan'
-            
         new_rec = PatientHistory(
-            name=name, 
-            age=int(age), 
-            prediction_result=res, 
-            probability=conf, 
+            name=name, age=int(age), 
+            prediction_result=res, probability=conf, 
             diagnostic_type="ECG Vision AI"
         )
         db.session.add(new_rec)
@@ -161,69 +162,61 @@ def predict_image():
                                
     return redirect('/predict_image_page')
 
-# ==========================================
-# PDF DOWNLOAD LOGIC
-# ==========================================
-@app.route('/download_report/<name>/<age>/<result>/<confidence>')
-def download_report(name, age, result, confidence):
-    if not os.path.exists('static/reports'):
-        os.makedirs('static/reports')
-        
+@app.route('/download_report/<name>/<age>/<prediction_text>/<probability>')
+def download_report(name, age, prediction_text, probability):
     pdf = FPDF()
     pdf.add_page()
     
-    pdf.set_font("Arial", 'B', 16)
-    pdf.set_text_color(44, 62, 80)
-    pdf.cell(200, 10, txt="HEART-AI CLINICAL DIAGNOSTIC REPORT", ln=True, align='C')
-    pdf.line(10, 20, 200, 20)
+    PRIMARY = (0, 180, 216)
+    DARK = (44, 62, 80)
+    DANGER = (231, 76, 60)
+    SUCCESS = (39, 174, 96)
+    
+    # Header
+    pdf.set_font("Arial", 'B', 22)
+    pdf.set_text_color(*PRIMARY)
+    pdf.cell(0, 10, "HEART-AI DIAGNOSTIC CENTER", ln=True, align='C')
     pdf.ln(10)
     
-    pdf.set_font("Arial", size=12)
-    pdf.set_text_color(0, 0, 0)
-    pdf.cell(200, 10, txt=f"Patient Name: {name}", ln=True)
-    pdf.cell(200, 10, txt=f"Patient Age: {age} Years", ln=True)
-    pdf.cell(200, 10, txt=f"Date of Scan: {datetime.utcnow().strftime('%Y-%m-%d')}", ln=True)
-    pdf.line(10, 55, 200, 55)
-    pdf.ln(10)
+    # Patient Info
+    report_id = f"HAI-{random.randint(10000, 99999)}"
+    pdf.set_font("Arial", 'B', 11)
+    pdf.set_text_color(*DARK)
+    pdf.cell(100, 8, f"PATIENT NAME: {name.upper()}")
+    pdf.cell(90, 8, f"REPORT ID: {report_id}", align='R', ln=True)
+    pdf.cell(100, 8, f"AGE: {age} Years")
+    pdf.cell(90, 8, f"DATE: {datetime.now().strftime('%d %B %Y')}", align='R', ln=True)
+    pdf.line(10, 50, 200, 50)
+    pdf.ln(15)
     
+    # Verdict
+    is_high_risk = "High" in prediction_text or "Abnormal" in prediction_text or "Infarction" in prediction_text
     pdf.set_font("Arial", 'B', 14)
-    pdf.cell(200, 10, txt="AI Vision Findings:", ln=True)
+    pdf.cell(0, 10, "1. AI DIAGNOSTIC VERDICT", ln=True)
     
-    pdf.set_font("Arial", 'B', 12)
-    if 'Normal' in result or 'Low' in result:
-        pdf.set_text_color(39, 174, 96)
-    elif 'Unrecognized' in result:
-        pdf.set_text_color(230, 126, 34)
+    if is_high_risk:
+        pdf.set_text_color(*DANGER)
     else:
-        pdf.set_text_color(231, 76, 60)
-        
-    pdf.cell(200, 10, txt=f"Diagnosis: {result}", ln=True)
-    
-    pdf.set_text_color(0, 0, 0)
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt=f"AI Confidence Score: {confidence}%", ln=True)
+        pdf.set_text_color(*SUCCESS)
+    pdf.cell(0, 8, f"STATUS: {prediction_text.upper()}", ln=True)
+    pdf.set_text_color(*DARK)
+    pdf.cell(0, 8, f"AI Confidence Score: {probability}%", ln=True)
     pdf.ln(10)
-    
-    pdf.set_font("Arial", 'B', 12)
-    pdf.cell(200, 10, txt="Clinical Recommendation:", ln=True)
-    pdf.set_font("Arial", size=11)
-    
-    if 'Normal' in result or 'Low' in result:
-        pdf.multi_cell(0, 8, txt="No immediate cardiac concerns detected. Routine checkups are advised to maintain cardiovascular health.")
-    elif 'Unrecognized' in result:
-        pdf.multi_cell(0, 8, txt="The uploaded image could not be confidently identified as an ECG scan. Please upload a valid medical document for analysis.")
+
+    # Findings & Recommendations
+    pdf.set_font("Arial", 'B', 14)
+    pdf.cell(0, 10, "2. CLINICAL RECOMMENDATIONS", ln=True)
+    pdf.set_font("Arial", '', 11)
+    if is_high_risk:
+        rec = "URGENT: Consult a Cardiologist immediately. AI indicates critical cardiovascular distress markers."
     else:
-        pdf.multi_cell(0, 8, txt="Abnormal patterns detected. Please consult a Cardiologist immediately for clinical correlation, further testing, and medical management.")
-        
-    pdf.ln(20)
-    pdf.set_font("Arial", 'I', 9)
-    pdf.set_text_color(150, 150, 150)
-    pdf.multi_cell(0, 5, txt="Disclaimer: This report is generated by an Artificial Intelligence system (Heart-AI) intended for research purposes. It does not replace professional medical advice, diagnosis, or treatment.")
+        rec = "Routine health maintained. Follow a balanced diet and regular exercise."
+    pdf.multi_cell(0, 7, rec)
     
-    report_path = f"static/reports/{name}_Diagnostic_Report.pdf"
-    pdf.output(report_path)
-    
-    return send_file(report_path, as_attachment=True)
+    response = make_response(pdf.output(dest='S').encode('latin-1'))
+    response.headers.set('Content-Disposition', f'attachment; filename={name}_Report.pdf')
+    response.headers.set('Content-Type', 'application/pdf')
+    return response
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart-AI | Diagnostic Selection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #030712;
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --accent-red: #ff0844;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-bg: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh; /* Fixed height for full screen */
+            overflow: hidden; /* Extra scroll hata diya */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Ambient Lighting / Realistic Glows */
+        .ambient-glow-1 { position: absolute; top: -20%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(79, 172, 254, 0.1) 0%, transparent 60%); filter: blur(80px); z-index: -1; pointer-events: none; }
+        .ambient-glow-2 { position: absolute; bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(255, 8, 68, 0.08) 0%, transparent 60%); filter: blur(80px); z-index: -1; pointer-events: none; }
+
+        /* Modern Glass Navbar */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center; padding: 15px 8%;
+            background: rgba(3, 7, 18, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); z-index: 100;
+        }
+
+        .logo { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; color: white; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .logo span { background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .nav-links { display: flex; gap: 35px; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 0.3s; }
+        .nav-links a:hover { color: white; }
+
+        /* Dashboard Container - FIXED HEIGHT & CENTERED */
+        .dashboard-container { 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            text-align: center; 
+            max-width: 900px; 
+            margin: 0 auto; 
+            padding: 0 20px; 
+            z-index: 10; 
+            width: 100%; 
+        }
+        
+        .pill-badge { display: inline-block; background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.2); padding: 5px 14px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; color: var(--primary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 15px; }
+        
+        .header-title { font-size: 2.8rem; font-weight: 800; margin-bottom: 10px; letter-spacing: -1px; }
+        .header-title span { background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { color: var(--text-muted); font-size: 1rem; margin-bottom: 40px; max-width: 550px; line-height: 1.5; }
+
+        /* Glassmorphism Cards */
+        .cards-wrapper { display: flex; gap: 30px; justify-content: center; width: 100%; }
+        
+        .card { 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 20px; 
+            padding: 35px 25px; /* HEIGHT REDUCED HERE */
+            width: 360px; 
+            text-decoration: none; 
+            color: inherit; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            position: relative;
+        }
+
+        /* Hover Effects */
+        .card:hover { transform: translateY(-10px); border-color: rgba(255, 255, 255, 0.2); }
+
+        /* Vitals Theme */
+        .card.vital:hover { box-shadow: 0 20px 40px rgba(0, 242, 254, 0.1); }
+        .card.vital .icon-wrapper { background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.2); box-shadow: inset 0 0 20px rgba(0, 242, 254, 0.2); }
+        .card.vital .btn { background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%); color: #000; }
+
+        /* ECG Theme */
+        .card.ecg:hover { box-shadow: 0 20px 40px rgba(255, 8, 68, 0.1); }
+        .card.ecg .icon-wrapper { background: rgba(255, 8, 68, 0.1); border: 1px solid rgba(255, 8, 68, 0.2); box-shadow: inset 0 0 20px rgba(255, 8, 68, 0.2); }
+        .card.ecg .btn { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); color: #fff; }
+
+        /* Card Content Styling */
+        .icon-wrapper { width: 75px; height: 75px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2.2rem; margin-bottom: 20px; transition: transform 0.3s; }
+        .card:hover .icon-wrapper { transform: scale(1.1); }
+        
+        .card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; color: white; margin-bottom: 12px; font-weight: 700; }
+        .card p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 25px; flex-grow: 1; }
+        
+        .btn { padding: 12px 25px; border-radius: 50px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; width: 85%; text-align: center; transition: 0.3s; font-size: 0.85rem; border: none; cursor: pointer; }
+        .card:hover .btn { transform: scale(1.05); }
+
+    </style>
+</head>
+<body>
+
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
+
+    <nav class="navbar">
+        <a href="/" class="logo">Heart<span>AI</span></a>
+        <div class="nav-links">
+            <a href="/dashboard" style="color: white;">Dashboard</a>
+            <a href="/history">Patient History</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="pill-badge">Terminal Access</div>
+        <h1 class="header-title">Diagnostic <span>Center</span></h1>
+        <p class="subtitle">Select the appropriate diagnostic module to initialize the neural network for patient evaluation.</p>
+
+        <div class="cards-wrapper">
+            <a href="/predict_vitals" class="card vital">
+                <div class="icon-wrapper">📋</div>
+                <h3>Patient Vitals</h3>
+                <p>Analyze tabular clinical parameters via the XGBoost machine learning engine to predict immediate risk.</p>
+                <div class="btn">Initialize Vitals</div>
+            </a>
+            
+            <a href="/predict_image_page" class="card ecg">
+                <div class="icon-wrapper">🫀</div>
+                <h3>ECG Vision AI</h3>
+                <p>Upload an ECG scan. The deep learning CNN will automatically analyze waveforms for abnormalities.</p>
+                <div class="btn">Initialize Vision</div>
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>
