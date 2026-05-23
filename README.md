@@ -1,6 +1,6 @@
 # 🫀 Heart-AI: Intelligent Cardiovascular Diagnostic System
 
-[![Live Demo](https://img.shields.io/badge/Demo-Live_Website-00f2fe?style=for-the-badge&logo=vercel)](https://your-live-website-link.com)
+[![Live Demo](https://img.shields.io/badge/Demo-Live_Website-00f2fe?style=for-the-badge&logo=vercel)](https://heart-disease-pred-4z15.onrender.com)
 [![Python Flask](https://img.shields.io/badge/Backend-Flask-black?style=for-the-badge&logo=flask)](#)
 [![TensorFlow](https://img.shields.io/badge/AI_Engine-TensorFlow-orange?style=for-the-badge&logo=tensorflow)](#)
 
@@ -10,11 +10,16 @@ Heart-AI is an advanced, dual-engine artificial intelligence platform designed t
 
 ## ✨ Key Features
 
-* 📊 **Clinical Vitals Engine (Tabular Data):** Utilizes an **XGBoost** machine learning classifier to analyze 13 critical clinical parameters (Age, BP, Cholesterol, ECG results, etc.) to predict the immediate risk of heart disease.
-* 📸 **ECG Vision AI (Image Data):** Employs a Custom **Convolutional Neural Network (CNN)** built with TensorFlow/Keras to visually analyze ECG scan images and classify anomalies like Myocardial Infarction or Abnormal Heartbeats.
-* 📈 **Interactive Clinical Dashboard:** Features dynamic, real-time visual comparisons of patient vitals against healthy medical thresholds using **Chart.js**.
-* 📄 **Automated PDF Medical Reports:** Generates professional, hospital-grade diagnostic PDFs via **FPDF**, complete with AI confidence scores, findings, and tailored clinical recommendations.
-* 🗄️ **Secure Patient History Archive:** A dedicated **SQLite** database tracks all historical assessments, allowing medical professionals to revisit and download past reports instantly.
+* 📊 **Clinical Vitals Engine (Tabular Data):
+* ** Utilizes an **XGBoost** machine learning classifier to analyze 13 critical clinical parameters (Age, BP, Cholesterol, ECG results, etc.) to predict the immediate risk of heart disease.
+* 📸 **ECG Vision AI (Image Data):
+* ** Employs a Custom **Convolutional Neural Network (CNN)** built with TensorFlow/Keras to visually analyze ECG scan images and classify anomalies like Myocardial Infarction or Abnormal Heartbeats.
+* 📈 **Interactive Clinical Dashboard:
+* ** Features dynamic, real-time visual comparisons of patient vitals against healthy medical thresholds using **Chart.js**.
+* 📄 **Automated PDF Medical Reports:
+* ** Generates professional, hospital-grade diagnostic PDFs via **FPDF**, complete with AI confidence scores, findings, and tailored clinical recommendations.
+* 🗄️ **Secure Patient History Archive:
+* ** A dedicated **SQLite** database tracks all historical assessments, allowing medical professionals to revisit and download past reports instantly.
 
 ---
 
@@ -57,7 +62,7 @@ Want to run this project locally? Follow these steps:
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/amansingh-gh/heart-ai.git](https://github.com/amansingh-gh/heart-ai.git)
+   git clone [https://github.com/amansingh-gh/heart-ai.git]
    cd heart-ai
 
 
